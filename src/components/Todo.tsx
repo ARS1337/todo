@@ -11,15 +11,15 @@ let Todo = () => {
     }
 
     let InitList1: todo[] = [curr];
-    let [id, setId] = useState(0);
-    let [current, setcurrent] = useState("");
+    let [id, setId] = useState(1);
+    let [current, setCurrent] = useState("");
     let [list, setlist] = useState(InitList1);
 
     return <div className="container">
         <h3 className="title">TodoApp</h3>
-        <input type="textbox" value={current} onChange={(e) => { setcurrent(e.target.value) }}></input>
-        <button onClick={() => { addTask(list, current, id, setlist) }}>addTask</button>
-        <TodoElements todos={list} clearTask={clearTask} />
+        <input type="textbox" value={current} onChange={(e) => { setCurrent(e.target.value) }}></input>
+        <button onClick={() => { addTask(list, current, id, setlist, setId, setCurrent) }}>addTask</button>
+        <TodoElements todos={list} clearTask={clearTask} setList={setlist} setCurrent={setCurrent} />
     </div>
 }
 
@@ -27,19 +27,25 @@ let Todo = () => {
     add task
     remove task
 */
-let addTask = (list: todo[], current: string, id: number, setList: any) => {
+let addTask = (list: todo[], current: string, id: number, setList: any, setId: any, setCurrent: any) => {
     if (current) {
         setList([...list, { "task": current, "completed": false, "id": id }]);
-        id++;
-        addData(list);
+        setId(id + 1);
+        addData([...list, { "task": current, "completed": false, "id": id }],setCurrent);
     } else {
         alert("Enter task to continue!")
     }
 
 }
-let clearTask: ClearTask = (todo: todo, list: todo[]) => {
-    todo.completed = true;
-    addData(list);
+let clearTask: ClearTask = (id: number, list: todo[], setList: any, setCurrent: any) => {
+    let temp: todo[] = list;
+    temp[id].completed = true;
+    console.log(temp)
+    setList(temp);
+    // todo.completed = true;
+    addData(temp,setCurrent);
+    console.log(setCurrent(""));
+    
 }
 /*
 create/ add a task
@@ -47,13 +53,15 @@ update that task / change what the task was
 delete remove a task
 last read / sync with main db at cloud
 */
-let addData = (list: todo[]) => {
+let addData = (list: todo[],setCurrent:any) => {
     db.collection("todosList").doc("todos").set({ list })
 
         .then((docRef: any) => {
             console.log("Document written with ID: ", docRef);
         })
         .then((docRef: any) => {
+            setCurrent("...");
+            setCurrent("");
             sync();
         })
         .catch((error: {}) => {

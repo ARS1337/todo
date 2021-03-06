@@ -6,6 +6,6 @@ interface todo {
 interface listOfTodos {
     todos: todo[];
 }
-type ClearTask = (todo:todo,list:todo[])=> void;
+type ClearTask = (id:number,list:todo[],setList:any,setCurrent:any)=> void;
 
 export type {todo,listOfTodos,ClearTask};
