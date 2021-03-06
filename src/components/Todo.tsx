@@ -1,54 +1,80 @@
-import firebase from "firebase";
-import firestore from "firebase/firestore";
 import { useState } from "react";
+import { firebaseConfig, db } from "../utils/firebase";
+import TodoElements from "./TodoElements";
+import { todo, ClearTask } from '../utils/interfaces';
 
-function Todo() {
-    let [id, setId] = useState("");
-    let x: number;
-    let cntr: number;
-    cntr = 0;
-    var firebaseConfig = {
-        apiKey: "AIzaSyC_FwyeGLPxey84mtzn03UVOqPrNhCxgfs",
-        authDomain: "dbfortodos.firebaseapp.com",
-        projectId: "dbfortodos",
-        storageBucket: "dbfortodos.appspot.com",
-        messagingSenderId: "1008293576283",
-        appId: "1:1008293576283:web:3f818a37eacd38583d897e"
-    };
-    //   Initialize Firebase
-    !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : x = 1;
+let Todo = () => {
+    let curr: todo = {
+        task: "Your Tasks Here",
+        completed: false,
+        id: 0
+    }
 
+    let InitList1: todo[] = [curr];
+    let [id, setId] = useState(0);
+    let [current, setcurrent] = useState("");
+    let [list, setlist] = useState(InitList1);
 
-    var db = firebase.firestore();
-
-    console.log("todo");
-
-    return <>
-        <input type="number" value={id} onChange={(e) => { setId(e.target.value) }}></input>
-        <button onClick={() => { deleteCollection(db, id) }}>deleteCollection</button>
-        <button onClick={() => { addData(db, id) }}>addData</button>
-    </>
+    return <div className="container">
+        <h3 className="title">TodoApp</h3>
+        <input type="textbox" value={current} onChange={(e) => { setcurrent(e.target.value) }}></input>
+        <button onClick={() => { addTask(list, current, id, setlist) }}>addTask</button>
+        <TodoElements todos={list} clearTask={clearTask} />
+    </div>
 }
-let deleteCollection = (db: any, id: string) => {
-    db.collection("todosList").doc(id).delete().then(() => {
-        console.log("Document successfully deleted!");
-    }).catch((error: {}) => {
-        console.error("Error removing document: ", error);
-    });
-}
-function addData(db: any, id: string) {
-    db.collection("todosList").doc(id).set({
-        todo: "asdasdasdasdasd",
-        completed: true,
-    })
 
-        .then((docRef: { id: string | undefined }) => {
-            console.log("Document written with ID: ", docRef.id);
+/*
+    add task
+    remove task
+*/
+let addTask = (list: todo[], current: string, id: number, setList: any) => {
+    if (current) {
+        setList([...list, { "task": current, "completed": false, "id": id }]);
+        id++;
+        addData(list);
+    } else {
+        alert("Enter task to continue!")
+    }
+
+}
+let clearTask: ClearTask = (todo: todo, list: todo[]) => {
+    todo.completed = true;
+    addData(list);
+}
+/*
+create/ add a task
+update that task / change what the task was
+delete remove a task
+last read / sync with main db at cloud
+*/
+let addData = (list: todo[]) => {
+    db.collection("todosList").doc("todos").set({ list })
+
+        .then((docRef: any) => {
+            console.log("Document written with ID: ", docRef);
+        })
+        .then((docRef: any) => {
+            sync();
         })
         .catch((error: {}) => {
             console.error("Error adding document: ", error);
         });
     console.log("addData called");
-
 }
+let sync = () => {
+    var docRef = db.collection("todosList").doc("todos");
+
+    docRef.get().then((doc: any) => {
+        if (doc.exists) {
+            console.log("Document data:", doc.data());
+
+        } else {
+            // doc.data() will be undefined in this case
+            console.log("No such document!");
+        }
+    }).catch((error: {}) => {
+        console.log("Error getting document:", error);
+    });
+}
+
 export default Todo;
