@@ -15,7 +15,7 @@ const TodoElements: React.FC<Props> = ({todos,setList, setCurrent,setId,updateTa
         <ul className="todoList tasks">
             {
                 todos.map(x=>{
-                    if(x.completed==false){
+                    if(x.completed===false){
                         return<>
                         <TodoListELements item={x} list={todos} clearTask={clearTask} setList={setList} setCurrent={setCurrent} setId={setId} updateTask={updateTask} current={current}/>
                         </>

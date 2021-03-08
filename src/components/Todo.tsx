@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { firebaseConfig, db } from "../utils/firebase";
+import { db } from "../utils/firebase";
 import TodoElements from "./TodoElements";
 import { todo, ClearTask } from '../utils/interfaces';
-import firebase from 'firebase';
 
 let Todo = () => {
     let curr: todo = {
@@ -46,9 +45,10 @@ let clearTask: ClearTask = (id: number, list: todo[], setList: any, setCurrent: 
     let temp: todo[] = list;
     console.log(temp,id)
     temp.map(x=>{
-        if(x.id==id){
+        if(x.id===id){
             x.completed=true;
         }
+        return x;
     })
     addData(temp, setCurrent, setList, setId, id, 1);
     console.log(setCurrent(""));
@@ -58,15 +58,15 @@ let updateTask =(id: number, list: todo[], setList: any, setCurrent: any, setId:
         let temp: todo[] = list;
         console.log(temp,id)
         temp.map(x=>{
-            if(x.id==id){
+            if(x.id===id){
                 x.task=current;
             }
+            return x;
         })
         addData(temp, setCurrent, setList, setId, id, 0);
     } else {
         alert("Enter task to continue!")
     }
-    
     console.log(setCurrent(""));
 }
 /*
@@ -79,7 +79,7 @@ let addData = (list: todo[], setCurrent: any, setList: any, setId: any, id: numb
     let temp = db.collection("todosList").doc("todos");
     let data = list;
     if (clear) {
-        data = list.filter(x => x.completed == false);
+        data = list.filter(x => x.completed === false);
     }
     temp.set({ data })
 

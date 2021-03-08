@@ -1,4 +1,4 @@
-import { todo, ClearTask, listOfTodos } from '../utils/interfaces';
+import { todo, ClearTask } from '../utils/interfaces';
 
 interface Props {
     item: todo;
