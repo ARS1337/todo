@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { firebaseConfig, db } from "../utils/firebase";
 import TodoElements from "./TodoElements";
 import { todo, ClearTask } from '../utils/interfaces';
+import firebase from 'firebase';
 
 let Todo = () => {
     let curr: todo = {
@@ -15,11 +16,16 @@ let Todo = () => {
     let [current, setCurrent] = useState("");
     let [list, setlist] = useState(InitList1);
 
+    useEffect(() => {
+        sync(setlist, setId, 0);
+        console.log("sad");
+    }, []);
+
     return <div className="container">
         <h3 className="title">TodoApp</h3>
         <input type="textbox" value={current} onChange={(e) => { setCurrent(e.target.value) }}></input>
         <button onClick={() => { addTask(list, current, id, setlist, setId, setCurrent) }}>addTask</button>
-        <TodoElements todos={list} clearTask={clearTask} setList={setlist} setCurrent={setCurrent} />
+        <TodoElements todos={list} clearTask={clearTask} setList={setlist} setCurrent={setCurrent} setId={setId} updateTask={updateTask} current={current}/>
     </div>
 }
 
@@ -29,23 +35,39 @@ let Todo = () => {
 */
 let addTask = (list: todo[], current: string, id: number, setList: any, setId: any, setCurrent: any) => {
     if (current) {
-        setList([...list, { "task": current, "completed": false, "id": id }]);
+        addData([...list, { "task": current, "completed": false, "id": id }], setCurrent, setList, setId, id, 0);
         setId(id + 1);
-        addData([...list, { "task": current, "completed": false, "id": id }],setCurrent);
     } else {
         alert("Enter task to continue!")
     }
 
 }
-let clearTask: ClearTask = (id: number, list: todo[], setList: any, setCurrent: any) => {
+let clearTask: ClearTask = (id: number, list: todo[], setList: any, setCurrent: any, setId: any) => {
     let temp: todo[] = list;
-    temp[id].completed = true;
-    console.log(temp)
-    setList(temp);
-    // todo.completed = true;
-    addData(temp,setCurrent);
+    console.log(temp,id)
+    temp.map(x=>{
+        if(x.id==id){
+            x.completed=true;
+        }
+    })
+    addData(temp, setCurrent, setList, setId, id, 1);
     console.log(setCurrent(""));
+}
+let updateTask =(id: number, list: todo[], setList: any, setCurrent: any, setId: any,current:string)=>{
+    if (current) {
+        let temp: todo[] = list;
+        console.log(temp,id)
+        temp.map(x=>{
+            if(x.id==id){
+                x.task=current;
+            }
+        })
+        addData(temp, setCurrent, setList, setId, id, 0);
+    } else {
+        alert("Enter task to continue!")
+    }
     
+    console.log(setCurrent(""));
 }
 /*
 create/ add a task
@@ -53,8 +75,13 @@ update that task / change what the task was
 delete remove a task
 last read / sync with main db at cloud
 */
-let addData = (list: todo[],setCurrent:any) => {
-    db.collection("todosList").doc("todos").set({ list })
+let addData = (list: todo[], setCurrent: any, setList: any, setId: any, id: number, clear: number) => {
+    let temp = db.collection("todosList").doc("todos");
+    let data = list;
+    if (clear) {
+        data = list.filter(x => x.completed == false);
+    }
+    temp.set({ data })
 
         .then((docRef: any) => {
             console.log("Document written with ID: ", docRef);
@@ -62,20 +89,22 @@ let addData = (list: todo[],setCurrent:any) => {
         .then((docRef: any) => {
             setCurrent("...");
             setCurrent("");
-            sync();
+            sync(setList, setId, id);
         })
         .catch((error: {}) => {
             console.error("Error adding document: ", error);
         });
+
+
     console.log("addData called");
 }
-let sync = () => {
+let sync = (setList: any, setId: any, id: number) => {
     var docRef = db.collection("todosList").doc("todos");
 
     docRef.get().then((doc: any) => {
         if (doc.exists) {
-            console.log("Document data:", doc.data());
-
+            setList(doc.data().data);
+            console.log(doc.data().data);
         } else {
             // doc.data() will be undefined in this case
             console.log("No such document!");

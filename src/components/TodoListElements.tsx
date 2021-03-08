@@ -5,13 +5,17 @@ interface Props {
     list: todo[];
     setList: any;
     setCurrent: any;
+    setId:any;
+    updateTask:any;
+    current:string;
     clearTask: ClearTask;
 };
 
-let TodoListELements: React.FC<Props> = ({ item, list, setList, setCurrent, clearTask }) => {
+let TodoListELements: React.FC<Props> = ({ item, list, setList, setCurrent,setId, updateTask,current,clearTask }) => {
     return <><li key={item.id} className="todoElements">
         <label >{item.task}</label>
-        <button onClick={() => clearTask(item.id, list, setList, setCurrent)}>Clear</button>
+        <button onClick={() => clearTask(item.id, list, setList, setCurrent,setId)}>Clear</button>
+        <button onClick={() => updateTask(item.id, list, setList, setCurrent,setId,current)}>Update</button>
     </li>
     </>
 }
