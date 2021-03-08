@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { db } from "../utils/firebase";
 import TodoElements from "./TodoElements";
-import { todo, ClearTask } from '../utils/interfaces';
+import { todo } from '../utils/interfaces';
 
 let Todo = () => {
     let curr: todo = {
@@ -17,14 +17,13 @@ let Todo = () => {
 
     useEffect(() => {
         sync(setlist, setId, 0);
-        console.log("sad");
     }, []);
 
     return <div className="container">
         <h3 className="title">TodoApp</h3>
         <input type="textbox" value={current} onChange={(e) => { setCurrent(e.target.value) }}></input>
         <button onClick={() => { addTask(list, current, id, setlist, setId, setCurrent) }}>addTask</button>
-        <TodoElements todos={list} clearTask={clearTask} setList={setlist} setCurrent={setCurrent} setId={setId} updateTask={updateTask} current={current}/>
+        <TodoElements todos={list} clearTask={(id) => { clearTask(id, list, setlist, setCurrent, setId) }} updateTask={(id) => { updateTask(id, list, setlist, setCurrent, setId, current) }} />
     </div>
 }
 
@@ -41,25 +40,27 @@ let addTask = (list: todo[], current: string, id: number, setList: any, setId: a
     }
 
 }
-let clearTask: ClearTask = (id: number, list: todo[], setList: any, setCurrent: any, setId: any) => {
+
+let clearTask = (id: number, list: todo[], setList: any, setCurrent: any, setId: any) => {
     let temp: todo[] = list;
-    console.log(temp,id)
-    temp.map(x=>{
-        if(x.id===id){
-            x.completed=true;
+    console.log(temp, id)
+    temp.map(x => {
+        if (x.id === id) {
+            x.completed = true;
         }
         return x;
     })
     addData(temp, setCurrent, setList, setId, id, 1);
     console.log(setCurrent(""));
 }
-let updateTask =(id: number, list: todo[], setList: any, setCurrent: any, setId: any,current:string)=>{
+
+let updateTask = (id: number, list: todo[], setList: any, setCurrent: any, setId: any, current: string) => {
     if (current) {
         let temp: todo[] = list;
-        console.log(temp,id)
-        temp.map(x=>{
-            if(x.id===id){
-                x.task=current;
+        console.log(temp, id)
+        temp.map(x => {
+            if (x.id === id) {
+                x.task = current;
             }
             return x;
         })
@@ -67,7 +68,7 @@ let updateTask =(id: number, list: todo[], setList: any, setCurrent: any, setId:
     } else {
         alert("Enter task to continue!")
     }
-    console.log(setCurrent(""));
+    setCurrent("");
 }
 /*
 create/ add a task
@@ -75,6 +76,9 @@ update that task / change what the task was
 delete remove a task
 last read / sync with main db at cloud
 */
+
+/// addData and sync sends and receives data from and to firestore
+
 let addData = (list: todo[], setCurrent: any, setList: any, setId: any, id: number, clear: number) => {
     let temp = db.collection("todosList").doc("todos");
     let data = list;
@@ -94,10 +98,9 @@ let addData = (list: todo[], setCurrent: any, setList: any, setId: any, id: numb
         .catch((error: {}) => {
             console.error("Error adding document: ", error);
         });
-
-
     console.log("addData called");
 }
+
 let sync = (setList: any, setId: any, id: number) => {
     var docRef = db.collection("todosList").doc("todos");
 

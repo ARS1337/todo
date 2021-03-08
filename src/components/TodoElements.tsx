@@ -1,25 +1,21 @@
-import { todo, ClearTask } from '../utils/interfaces';
+import { todo, ClearTask, UpdateTask } from '../utils/interfaces';
 import TodoListELements from './TodoListElements';
 
 interface Props {
     todos: todo[];
-    setList:any;
-    setCurrent:any;
-    setId:any;
-    updateTask:any;
-    current:string;
     clearTask: ClearTask;
+    updateTask: UpdateTask;
 }
-const TodoElements: React.FC<Props> = ({todos,setList, setCurrent,setId,updateTask, current,clearTask}) => {
+const TodoElements: React.FC<Props> = ({ todos, updateTask, clearTask }) => {
     return (
         <ul className="todoList tasks">
             {
-                todos.map(x=>{
-                    if(x.completed===false){
-                        return<>
-                        <TodoListELements item={x} list={todos} clearTask={clearTask} setList={setList} setCurrent={setCurrent} setId={setId} updateTask={updateTask} current={current}/>
+                todos.map(x => {
+                    if (x.completed === false) {
+                        return <>
+                            <TodoListELements item={x} clearTask={clearTask} updateTask={updateTask} />
                         </>
-                    }else{
+                    } else {
                         return <></>
                     }
 
